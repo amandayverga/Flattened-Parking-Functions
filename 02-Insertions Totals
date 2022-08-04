@@ -1,1 +1,91 @@
+def check_if_flattened(list_permutations):
+# Checks given permutations/parking functions for flattened ones
+# Input: list of parking functions (type list)
+# Output: a list of only flattened parking functions (type list)
+    flattened_permutations_list=[]
+    runs_total = 1
+    for i in list_permutations:
+        is_a_flattened_partition=True
+        leading_term = i[0]
+        for j in range(1,len(i)): # Iterates through each run to check if leading terms are in order
+            if i[j] < i[j-1]:
+                if i[j] >= leading_term:
+                    leading_term = i[j]
+                    runs_total = runs_total + 1
+                else:
+                    is_a_flattened_partition=False
+        if is_a_flattened_partition==True:
+            flattened_permutations_list.append(i)
+    return (flattened_permutations_list)
 
+def insert_a_number(flattened_perms_list, num):
+# Take our pre-existing list of flattened permutations of n, and input an list of integers to get a parking function of length n+1
+# Input: (1) List of flattened permutations of length n
+#        (2) List of numbers to be added
+# Output: List of parking functions of length n+1 (may or may not be flattened) with added chosen number
+    insertion_list=[]
+    for i in flattened_perms_list:  #Does the first i spaces
+        for j in range(len(i)):
+            new_perm = i.copy()
+            new_perm.insert(j, num)
+            if new_perm not in insertion_list: #checks for duplicates
+                   insertion_list.append(new_perm)
+            #Does the last space
+        newer_perm = i.copy()
+        newer_perm.append(num)
+        if newer_perm not in insertion_list: #checks for duplicates
+            insertion_list.append(newer_perm)
+    return insertion_list
+
+def count_runs(flattened_pfs_list_uncounted, n):
+# Counts how many flattened parking functions of 1 run, 2 runs, . . . , ceil(n/2) runs
+# Input: list of flattened parking functions with number added
+# Output: (1) vector of length ceil(n/2), where each term in the vector correspondes to runs of a particular length
+#         (2) list of lists of parking functions of each number of runs
+    runs_totals = list(0 for i in range(0,ceil(n/2)))  # Number of runs we can have
+    pfs_with_runs = list([] for i in range(0,ceil(n/2))) #list of parking functions with each number of runs
+    for i in flattened_pfs_list_uncounted: #each i is a parking function
+        runs_current = 1
+        for j in range(1,len(i)): #iterates through each number in the pf
+            if i[j] < i[j-1]:  # if there is a descent
+                runs_current = runs_current + 1
+        runs_totals[runs_current-1] = runs_totals[runs_current-1] + 1
+        pfs_with_runs[runs_current-1].append(i)
+    return runs_totals,pfs_with_runs
+
+def main(n, S):
+# Input: (1) n = length of starting permutation
+#        (2) S = multiset of element(s) being inserted
+# Output: list of flattened parking functions with S inserted
+
+    # Generate list of all permutations
+    list_permutations = Permutations(n).list()
+    list_permutations_but_type_list = []
+    list_of_numbers = list(range(1,n+1))
+    for i in list_permutations:
+        result=i.action(list_of_numbers)
+        list_permutations_but_type_list.append(result)
+
+    # Insert each element of S into each index of the permutations
+    insertion_list = list_permutations_but_type_list
+    for k in S:
+        insertion_list = insert_a_number(insertion_list, k)
+
+    # Checks if resulting parking function is flat
+    final_list = check_if_flattened(insertion_list)
+
+    # Count number of runs in each permutation and get totals of each number of runs
+    runs_totals,pfs_with_runs = count_runs(final_list, n+len(S))
+
+    print("There are %d flattened parking functions of length %d when we inserted S." %(len(final_list),n+len(S)))
+    i = 1
+    for j in runs_totals:
+        print("There are %d flattened parking functions with %d runs when we inserted S." %(j,i))
+        i = i+1
+    l = 1
+    for k in pfs_with_runs:
+        print("Parking functions with %d run(s):" %l)
+        print(k)
+        l=l+1
+
+main(3,[1,1,1]) # E.g. permutation of length 3 with {1,1,1} inserted

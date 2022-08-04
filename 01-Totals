@@ -1,1 +1,72 @@
+def parking_fxns(n):
+    all_functions = ParkingFunctions(n).list()
+    all_functions_but_type_list = []
 
+    for i in all_functions:
+        new_list = []
+        for j in range(n):
+            new_list.append(i[j])
+        all_functions_but_type_list.append(new_list)
+
+    return all_functions_but_type_list
+
+def check_if_flattened(list_permutations):
+
+    # This function checks given permutations/parking functions for flattened ones
+    # Input: list of parking functions (type list)
+    # Output: list of flattened parking functions (type list)
+
+    flattened_permutations_list=[]
+    runs_total = 1
+    for i in list_permutations:
+        is_a_flattened_partition=True
+        leading_term = i[0]
+        for j in range(1,len(i)): # Iterates through each run to check if leading terms are in order
+            # if i[j] >= i[j-1] then still in the same run
+            if i[j] < i[j-1]:
+                if i[j] >= leading_term:
+                    leading_term = i[j]
+                    runs_total = runs_total + 1
+                else:
+                    is_a_flattened_partition = False
+        if is_a_flattened_partition == True:
+            flattened_permutations_list.append(i)
+    return (flattened_permutations_list)
+
+def count_runs(flattened_pfs_list_uncounted, n):
+    # Counts how many flattened parking functions of 1 run, 2 runs, . . . , ceil(n/2) runs
+    # Input: ???
+    # Output: vector of length {1, \dots, ceil(n/2)}, where each term in the vector correspondes to runs of a particular length
+    runs_totals = list(0 for i in range(0,ceil(n/2)))  # Number of runs we can have
+    pfs_with_runs = list([] for i in range(0,ceil(n/2))) # List of parking functions with each number of runs
+    for i in flattened_pfs_list_uncounted: # Each i is a parking function
+        runs_current = 1
+        for j in range(1,len(i)): # Iterates through each number in the pf
+            if i[j] < i[j-1]:  # Checks if there is a descent
+                runs_current = runs_current + 1
+        runs_totals[runs_current-1] = runs_totals[runs_current-1] + 1
+        pfs_with_runs[runs_current-1].append(i)
+    return runs_totals
+
+
+def main():
+    num = 5 # E.g. flattened parking functions of length 5
+    unflattened = parking_fxns(num)
+
+    flattened = check_if_flattened(unflattened)
+    print(flattened)
+
+    print("There are %d flattened parking functions of length %d" %(len(flattened),num))
+
+    # Count the number of runs in each permutation and get totals of each number of runs
+    runs_totals = count_runs(flattened, num) #will need to change "n+1" if you add more than one number
+
+    i = 1
+    for j in runs_totals:
+        print("There are %d flattened parking functions with %d runs (length %d)." %(j,i,num))
+        i = i+1
+
+
+main()
+
+# Our totals are 1, 2, 8, 46, 336, 2937, 29629, etc.
